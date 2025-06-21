@@ -1,0 +1,82 @@
+from src.get_repo import get_github_file
+import ast
+
+
+class File:
+    """
+    Represents a file under test from a GitHub repo
+
+    Attributes:
+        content (str): The file content
+        methods (list[]): The method info extracted from the file
+        prompts (list[]): The prompts generated based on method info
+
+    Methods:
+        display(): Print the data in the class
+        extract_methods(): Search the node to find methods
+        process_node_for_methods(node, class_name): Deal with each node
+        prompting(k): Build prompts to ask LLM generating k assertions
+    """
+    def __init__(self, repo_owner, repo_name, file_path, branch, token=None):
+        print("Getting the repo file...")
+        self.content = get_github_file(repo_owner, repo_name, file_path, branch, token)
+        self.methods = []
+        self.prompts = []
+
+    def display(self):
+        print(self.content)
+        for method in self.methods:
+            if method['class']:
+                print(f"Class '{method['class']}': {method['name']}")
+            else:
+                print(f"Func: {method['name']}")
+            print(method['text'])
+            print("\n" + "-" * 50 + "\n")
+
+    def extract_methods(self):
+        for node in ast.parse(self.content).body:
+            self.process_node_for_methods(node)
+
+    def process_node_for_methods(self, node, class_name=None):
+        if isinstance(node, ast.FunctionDef):
+            # Locate methods
+            start_line = node.lineno - 1
+            if hasattr(node.body[-1], 'end_lineno'):
+                end_line = node.body[-1].end_lineno
+            else:
+                # Could lose some lines
+                print("Warning: some lines of methods could be ignored.")
+                end_line = node.body[-1].lineno
+
+            # Get method lines
+            method_lines = self.content.splitlines()[start_line:end_line]
+
+            # Add indents
+            indent = len(method_lines[0]) - len(method_lines[0].lstrip())
+            method_text = '\n'.join(line[indent:] for line in method_lines)
+
+            # Save method info
+            self.methods.append({
+                'name': node.name,
+                'class': class_name,
+                'text': method_text
+            })
+
+        # Deal with methods in classes
+        if isinstance(node, ast.ClassDef):
+            for child in node.body:
+                self.process_node_for_methods(child, node.name)
+
+    def prompting(self, k=5):
+        messages = []
+        for m in self.methods:
+            messages.append(f"""You are a professional Python test engineer.
+            Please generate at least {k} test assertions for the following Python methods. 
+            Requirements:
+            1. analyze the method's input parameters, return values, and possible behaviors
+            2. generate assertions for multiple typical test scenarios, 
+            including normal case, boundary case, and abnormal case
+            3. use pytest style `assert` statements
+            4. Do not generate the actual test code or explanations, only the assertions.
+            Method information: {m['text']}""")
+        return messages
