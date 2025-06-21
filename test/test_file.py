@@ -5,7 +5,7 @@ def test_file():
     f = fd.File("TheAlgorithms", "Python", "ciphers/base32.py", "master")
     f.extract_methods()
     f.display()
-    m = f.prompting()
+    m = f.prompting(10)
     print(m)
 
 

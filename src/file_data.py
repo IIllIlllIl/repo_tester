@@ -1,5 +1,8 @@
-from src.get_repo import get_github_file
+import sys
+import os
 import ast
+from src.get_repo import get_github_file
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 class File:

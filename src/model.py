@@ -3,6 +3,20 @@ import json
 
 
 class Model:
+    """
+    Call LLM api to generate assertions
+
+    Attributes:
+        based_url (str): The basic url of LLM server
+        relative_url (str): The relative url of LLM server
+        model (str): The name of model
+        message (str): The input user message
+        temperature (float): The input temperature of the LLM
+        headers (Dict): Headers of the request
+
+    Methods:
+        call_llm_api(): Call LLM sever API
+    """
     def __init__(self, based_url, relative_url, model, message, temperature=0.8):
         self.based_url = based_url
         self.relative_url = relative_url
@@ -12,7 +26,7 @@ class Model:
         self.headers = {"Content-Type": "application/json"}
 
     def call_llm_api(self):
-        print("Calling LLM API")
+        print("Calling LLM API...")
         url = f"{self.based_url}/{self.relative_url}"
         
         # 调整为chat completions格式
