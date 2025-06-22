@@ -19,10 +19,14 @@ program "ciphers/base32.py" in the GitHub repo: https://github.com/TheAlgorithms
 
 ### Example
 Before running the test, we should first start the LLM server. In the example, we use the model, "deepseek-chat".
+
 Run the program:
 ```
+export PYTHONPATH='..'
+
 python src/cmd_tester.py
 ```
+
 
 ### Test other repositories
 If you want to test another Python file, you should first change the configurations. In the configuration, you should 
@@ -80,3 +84,54 @@ The Python method "prompting" in "file_data" builds the prompt.
 
 - input_format: choose to provide source code or AST
 - cot: use the chain of thought technique or not
+
+If any improvement is expected, you can modify the method "prompting" in model "file_date":
+```python
+def prompting(self, model_name, input_format="text", cot=False):
+    messages = []
+    for m in self.methods:
+        prompt = """Generate Python unit test code strictly following these requirements:
+1. **Output Format**: Wrap the entire code in a Markdown Python code block (```python ... ```)
+2. **Testing Framework**: Use pytest (not unittest) and only import pytest
+3. **Test Organization**:
+   - Structure tests as ONE function (no test classes)
+   - Group by scenario in one function:
+     ```python
+     def test_{function_name}:
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+     ```
+4. **Type Safety**:
+   - All test parameters must match the function's type annotations
+   - Validate type errors using `pytest.raises(TypeError)`
+   - Include parameterized tests where appropriate
+5. **Complete Structure**:
+   ```python
+   # Function under test (include definition)
+   def target_function(...): ...
+   
+   # ===== Test cases  =====
+   import pytest
+   
+   def test_{function_name}():
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+6. Purity: Output ONLY the Markdown code block with no additional text."""
+        prompt += f"Function to test in model {model_name}:"
+        if input_format == "ast":
+            prompt += m['ast']
+        else:
+            prompt += m['text']
+        if cot:
+            prompt += "Let's think step by step:"
+        messages.append(prompt)
+    return messages
+```

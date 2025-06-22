@@ -18,7 +18,8 @@ class File:
         display(): Print the data in the class
         extract_methods(): Search the node to find methods
         process_node_for_methods(node, class_name): Deal with each node
-        prompting(): Build prompts to ask LLM generating k assertions
+        prompting(): Build prompts to ask LLM
+        get_method_names(): Get all method names in the file under test
     """
     def __init__(self, repo_owner, repo_name, file_path, branch, token=None):
         print("Getting the repo file...")
