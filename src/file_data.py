@@ -91,3 +91,8 @@ class File:
                 prompt += "Let's think step by step:"
             messages.append(prompt)
         return messages
+
+    def get_method_names(self):
+        names = []
+        for m in self.methods:
+            names.append(m['name'])

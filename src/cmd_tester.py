@@ -7,6 +7,7 @@ from src.model import Model
 from src.config import Config
 from src.get_repo import clone_github_repo
 from src.build_file import Builder
+from src.dependency import Dependency
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
@@ -39,7 +40,7 @@ if __name__ == "__main__":
     options = parser.parse()
     config = Config(options.config_path)
 
-    # get GitHub repo & target file
+    # Get file under test
     repo_owner = config.get('repo_owner')
     repo_name = config.get('repo_name')
     file_path = config.get('file_path')
@@ -50,11 +51,25 @@ if __name__ == "__main__":
     f = File(repo_owner, repo_name, file_path, branch, token)
     f.extract_methods()
     prompt_messages = f.prompting(options.k)
+    methods = f.get_method_names()
 
+    # Get imports
+    imports = config.get('imports')
+    d = Dependency(f.content, imports)
+    imp = d.generate_imports()
+
+    # Clone repo
     output = config.get('output')
-    # clone_github_repo(repo_owner, repo_name, output)
+    clone_github_repo(repo_owner, repo_name, output)
 
-    # Call LLM
+    # Build test file path
+    target_path = output_path = os.path.join(output, file_path)
+    directory = os.path.dirname(target_path)
+    base_name = os.path.splitext(os.path.basename(target_path))[0]
+    test_file_name = f"test_{base_name}.py"
+    test_file_output_path = os.path.join(output, test_file_name)
+
+    # Call LLM and get assertions
     based_url = config.get('based_url')
     relative_url = config.get('relative_url')
     model = config.get('model')
@@ -65,15 +80,22 @@ if __name__ == "__main__":
         response = m.call_llm_api()
         if response:
             contents.append(response["choices"][0]["message"]["content"])
+        else:
+            contents.append(None)
 
     # Generate test and try compiling
-    if len(contents) != 0:
-        for con in contents:
-            tg = TestGenerator(contents)
-            # 没有生成一个test文件下的一个test函数
-            # tg.extract_assertions()
-            # output_path = os.path.join(output, file_path)
-            # imports = config.get('imports')
-            # tg.test_assertions(output_path, imports)
-            # tg.create_test_file(output_path, imports)
+    assertions = {}
+    for m, c in zip(methods, contents):
+        if c is not None:
+            tg = TestGenerator(c)
+            tg.extract_assertions()
+            # Try compile
+            compiled = tg.test_assertions(test_file_output_path, imp)
+            assertions[m] = compiled
 
+    # Build files with assertions passed compilation
+    b = Builder()
+    for m, c in assertions:
+        b.add_method_assertions(m, c)
+    b.write_down_test(test_file_output_path, imp)
+    b.report_pytest(test_file_output_path)
