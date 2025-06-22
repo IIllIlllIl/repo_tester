@@ -4,13 +4,18 @@ from typing import List, Set
 
 class Dependency:
     """
-    Build
+    Get all packages from file under test
 
     Attributes:
-        method_assertions (dict): All
+        test_file_content (str): The content of file under test
+        additional_imports (List): Additional packages from configuration file
+        tree (ast): The ast of the file under test
 
     Methods:
-        add_method_assertions(method_name, assertions): Over
+        extract_existing_imports(): Get all packages of file under test
+        extract_additional_imports(): Get all additional packages from configuration file
+        generate_imports(): Generate packages import lines
+        path_to_import(path): Change file under test path into import format
     """
     def __init__(self, test_file_content, additional_imports=None):
         self.test_file_content = test_file_content
@@ -42,9 +47,20 @@ class Dependency:
 
         return additional_imports
 
-    def generate_imports(self) -> str:
+    def generate_imports(self):
         existing_imports = self.extract_existing_imports()
         additional_imports = self.extract_additional_imports()
         all_imports = existing_imports + list(additional_imports - set(existing_imports))
-
         return "\n".join(all_imports)
+
+    @staticmethod
+    def path_to_import(path):
+        components = []
+        for part in path.split('/'):
+            part = part.strip()
+            if part:
+                if '.' in part and not part.startswith('.'):  # 排除隐藏文件
+                    part = part.rsplit('.', 1)[0]
+                components.append(part)
+        result = '.'.join(components)
+        return result.lstrip('.')

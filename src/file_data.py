@@ -18,7 +18,7 @@ class File:
         display(): Print the data in the class
         extract_methods(): Search the node to find methods
         process_node_for_methods(node, class_name): Deal with each node
-        prompting(k): Build prompts to ask LLM generating k assertions
+        prompting(): Build prompts to ask LLM generating k assertions
     """
     def __init__(self, repo_owner, repo_name, file_path, branch, token=None):
         print("Getting the repo file...")
@@ -71,34 +71,45 @@ class File:
             for child in node.body:
                 self.process_node_for_methods(child, node.name)
 
-    def prompting(self, k=5, input_format="text", cot=False):
+    def prompting(self, model_name, input_format="text", cot=False):
         messages = []
         for m in self.methods:
-            prompt = f"""Generate test assertions for the Python function below. Adhere strictly to these requirements:
-
-1. Output ONLY valid Python assert statements
-2. Required format: `assert <expression>, "<optional_error_message>"`
-3. Never include:
-   - Explanations or comments
-   - Code blocks (``` markers)
-   - Function definitions
-   - Natural language descriptions
-   - Non-assert code
-
-Positive Examples:
-assert multiply(2, 3) == 6
-assert add(5, -3) == 2, "Positive and negative addition"
-with pytest.raises(ValueError):
-    divide(10, 0)
-
-Negative Examples (UNACCEPTABLE):
-# Test case for multiply function
-print(assert multiply(2,4))
-"The result should be 8" 
-def test_multiply():
-    assert multiply(2,4) == 8
-
-Now generate assertions for this function:"""
+            prompt = """Generate Python unit test code strictly following these requirements:
+1. **Output Format**: Wrap the entire code in a Markdown Python code block (```python ... ```)
+2. **Testing Framework**: Use pytest (not unittest) and only import pytest
+3. **Test Organization**:
+   - Structure tests as ONE function (no test classes)
+   - Group by scenario in one function:
+     ```python
+     def test_{function_name}:
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+     ```
+4. **Type Safety**:
+   - All test parameters must match the function's type annotations
+   - Validate type errors using `pytest.raises(TypeError)`
+   - Include parameterized tests where appropriate
+5. **Complete Structure**:
+   ```python
+   # Function under test (include definition)
+   def target_function(...): ...
+   
+   # ===== Test cases  =====
+   import pytest
+   
+   def test_{function_name}():
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+6. Purity: Output ONLY the Markdown code block with no additional text."""
+            prompt += f"Function to test in model {model_name}:"
             if input_format == "ast":
                 prompt += m['ast']
             else:

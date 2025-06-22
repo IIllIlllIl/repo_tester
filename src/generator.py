@@ -8,6 +8,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 class TestGenerator:
     """
+    ** Abandoned class **
     Generates test cases based on the LLM generated assertion
 
     Attributes:
@@ -56,7 +57,6 @@ def test_{i}():
 
             # Run pytest and check compile failure
             result = self.execute_pytest(file_path)
-            print(result)
             if result['returncode'] != 2:
                 self.compiled.append(assertion)
 

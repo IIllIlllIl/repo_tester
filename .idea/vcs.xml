@@ -2,6 +2,8 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/repo_files/Python" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/repo_files/os" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/src/repo_files/Python" vcs="Git" />
   </component>
 </project>

@@ -1,5 +1,6 @@
 import requests
 import json
+from openai import OpenAI
 
 
 class Model:
@@ -15,15 +16,31 @@ class Model:
         headers (Dict): Headers of the request
 
     Methods:
-        call_llm_api(): Call LLM sever API
+        openai_api(): Call openai API
+        call_llm_api(): Abandoned method
     """
-    def __init__(self, based_url, relative_url, model, message, temperature=0.2):
+    def __init__(self, based_url, model, message, key, temperature=0.0, relative_url=None,):
         self.based_url = based_url
         self.relative_url = relative_url
         self.model = model
         self.message = message
         self.temperature = temperature
         self.headers = {"Content-Type": "application/json"}
+        self.key = key
+
+    def openai_api(self):
+        client = OpenAI(api_key=self.key, base_url=self.based_url)
+
+        response = client.chat.completions.create(
+            model=self.model,
+            messages=[
+                {"role": "system", "content": "You are a professional Python developer."},
+                {"role": "user", "content": f"{self.message}"},
+            ],
+            stream=False
+        )
+
+        return response.choices[0].message.content
 
     def call_llm_api(self):
         print("Calling LLM API...")

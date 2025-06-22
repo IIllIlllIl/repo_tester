@@ -14,6 +14,7 @@ def test_addition():
     d = Dependency(file_content, additional_imports)
     i = d.generate_imports()
     print(i)
+    print(Dependency.path_to_import("../repo_files/Python/ciphers/test_base32.py"))
 
 
 test_dependency()

@@ -7,15 +7,43 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def test_model():
-    message = """You are a professional Python test engineer.
-            Please generate at least 5 test assertions for the following Python methods.
-            Requirements:
-            1. analyze the method's input parameters, return values, and possible behaviors
-            2. generate assertions for multiple typical test scenarios,
-            including normal case, boundary case, and abnormal case
-            3. use pytest style `assert` statements
-            4. Do not generate the actual test code or explanations, only the assertions.
-            Method information: def base32_encode(data: bytes) -> bytes:
+    message = """Generate Python unit test code strictly following these requirements:
+1. **Output Format**: Wrap the entire code in a Markdown Python code block (```python ... ```)
+2. **Testing Framework**: Use pytest (not unittest)
+3. **Test Organization**:
+   - Structure tests as ONE function (no test classes)
+   - Group by scenario in one function:
+     ```python
+     def test_{function_name}:
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+     ```
+4. **Type Safety**:
+   - All test parameters must match the function's type annotations
+   - Validate type errors using `pytest.raises(TypeError)`
+   - Include parameterized tests where appropriate
+5. **Complete Structure**:
+   ```python
+   # Function under test (include definition)
+   def target_function(...): ...
+   
+   # ===== Test cases  =====
+   import pytest
+   from {model_name} import {function_name}
+   
+   def test_{function_name}():
+        # Normal cases
+        ...
+        # Edge/boundary cases
+        ...
+        # Error/exception cases
+        ...
+6. Purity: Output ONLY the Markdown code block with no additional text.
+Function to test:
     \"\"\"
     >>> base32_encode(b"Hello World!")
     b'JBSWY3DPEBLW64TMMQQQ===='
@@ -30,12 +58,11 @@ def test_model():
     b32_result = "".join(B32_CHARSET[int(chunk, 2)] for chunk in b32_chunks)
     return bytes(b32_result.ljust(8 * ((len(b32_result) // 8) + 1), "="), "utf-8")"""
 
-    m = Model("http://localhost:8000", "v1/chat/completions", "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", message)
+    key = "sk-?"
+    m = Model("https://api.deepseek.com", "deepseek-chat", message, key)
 
-    response = m.call_llm_api()
-    if response:
-        content = response["choices"][0]["message"]["content"]
-        print(f"LLM: {content}")
+    response = m.openai_api()
+    print(response)
 
 
 test_model()

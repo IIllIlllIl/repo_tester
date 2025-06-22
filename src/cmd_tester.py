@@ -1,14 +1,16 @@
-import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import argparse
+import subprocess
+from pathlib import Path
+import sys
 from src.file_data import File
-from src.generator import TestGenerator
 from src.model import Model
 from src.config import Config
 from src.get_repo import clone_github_repo
-from src.build_file import Builder
+from src.response import ResponseProcessor
 from src.dependency import Dependency
+from src.reader import FileOperator
+from src.build_file import Builder
 
 
 class ArgParser:
@@ -21,11 +23,8 @@ class ArgParser:
         self.args = None
 
     def _add_arguments(self):
-        self.parser.add_argument('-c', '--config_path', type=str, default="config/example.json",
-                                 help='Set config file path, using "config/example.json" as default.')
-        self.parser.add_argument('-k', '--k', type=int, default=3,
-                                 help='Set the time of LLM generation. The assertions involved in the final test'
-                                      'case will less than k, since some do not pass the compilation.')
+        self.parser.add_argument('-c', '--config_path', type=str, default="../config/example.json",
+                                 help='Set config file path, using "../config/example.json" as default.')
 
     def parse(self, args=None):
         self.args = self.parser.parse_args(args)
@@ -35,78 +34,60 @@ class ArgParser:
         return self.args
 
 
-def check_dict(data):
-    for value in data.values():
-        if value is None or (isinstance(value, list) and len(value) == 0):
-            return True
-    return False
-
-
 if __name__ == "__main__":
     parser = ArgParser()
     options = parser.parse()
     config = Config(options.config_path)
 
-    # Get file under test
+    # Build test file path
     repo_owner = config.get('repo_owner')
     repo_name = config.get('repo_name')
     file_path = config.get('file_path')
     branch = config.get('branch')
     token = config.get('token')
-    if token == "None":
-        token = None
-    f = File(repo_owner, repo_name, file_path, branch, token)
-    f.extract_methods()
-    prompt_messages = f.prompting(options.k)
-    methods = f.get_method_names()
-
-    # Get imports
-    imports = config.get('imports')
-    d = Dependency(f.content, imports)
-    imp = d.generate_imports()
-
-    # Clone repo
     output = config.get('output')
-    clone_github_repo(repo_owner, repo_name, output)
-
-    # Build test file path
     target_path = output_path = os.path.join(output, repo_name, file_path)
     directory = os.path.dirname(target_path)
     base_name = os.path.splitext(os.path.basename(target_path))[0]
     test_file_name = f"test_{base_name}.py"
     test_file_output_path = os.path.join(directory, test_file_name)
 
-    # Call LLM and get assertions
+    # Get file under test & clone repo
+    if token == "None":
+        token = None
+    f = File(repo_owner, repo_name, file_path, branch, token)
+    f.extract_methods()
+    prompt_messages = f.prompting(base_name)
+    methods = f.get_method_names()
+    clone_github_repo(repo_owner, repo_name, output)
+
+    # Get imports
+    imports = config.get('imports')
+    model_name = Dependency.path_to_import(target_path)
+    for m in methods:
+        imports.append(f"from {model_name} import {m}")
+    d = Dependency(f.content, imports)
+    imp = d.generate_imports()
+
+    # Call LLM and get test
     based_url = config.get('based_url')
-    index = options.k
     relative_url = config.get('relative_url')
     model = config.get('model')
     temperature = config.get('temperature')
-    assertions = {}
-    for i in range(index):
-        contents = []
-        for message in prompt_messages:
-            m = Model(based_url, relative_url, model, message, temperature)
-            response = m.call_llm_api()
-            if response:
-                contents.append(response["choices"][0]["message"]["content"])
-            else:
-                contents.append(None)
+    key = config.get('key')
 
-        # Generate test and try compiling
-        for m, c in zip(methods, contents):
-            if c is not None:
-                tg = TestGenerator(c)
-                tg.extract_assertions()
-                # Try compile
-                compiled = tg.test_assertions(test_file_output_path, imp)
-                assertions[m] = compiled
-        if not check_dict(assertions):
-            break
+    contents = []
+    print("Calling LLM API...")
+    for message in prompt_messages:
+        m = Model(based_url, model, message, key, temperature)
+        response = m.openai_api()
+        rp = ResponseProcessor(response, test_file_output_path)
+        rp.extract_test_case()
+        contents.append(rp.test)
 
-    # Build files with assertions passed compilation
-    b = Builder()
-    for m, c in assertions:
-        b.add_method_assertions(m, c)
-    b.write_down_test(test_file_output_path, imp)
-    b.report_pytest(test_file_output_path)
+    # Save file and run pytest
+    merged_content = Builder.merge(contents)
+    test_file_content = imp + "\n" + Builder.remove_imports(merged_content, base_name)
+    print(f"Write {len(contents)} tests to {test_file_output_path}.")
+    FileOperator.write_file(test_file_output_path, test_file_content)
+    Builder.report_pytest(test_file_output_path)
