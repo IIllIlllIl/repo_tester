@@ -17,7 +17,7 @@ class Model:
     Methods:
         call_llm_api(): Call LLM sever API
     """
-    def __init__(self, based_url, relative_url, model, message, temperature=0.8):
+    def __init__(self, based_url, relative_url, model, message, temperature=0.2):
         self.based_url = based_url
         self.relative_url = relative_url
         self.model = model

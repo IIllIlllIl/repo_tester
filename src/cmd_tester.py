@@ -35,6 +35,13 @@ class ArgParser:
         return self.args
 
 
+def check_dict(data):
+    for value in data.values():
+        if value is None or (isinstance(value, list) and len(value) == 0):
+            return True
+    return False
+
+
 if __name__ == "__main__":
     parser = ArgParser()
     options = parser.parse()
@@ -71,27 +78,31 @@ if __name__ == "__main__":
 
     # Call LLM and get assertions
     based_url = config.get('based_url')
+    index = options.k
     relative_url = config.get('relative_url')
     model = config.get('model')
     temperature = config.get('temperature')
-    contents = []
-    for message in prompt_messages:
-        m = Model(based_url, relative_url, model, message, temperature)
-        response = m.call_llm_api()
-        if response:
-            contents.append(response["choices"][0]["message"]["content"])
-        else:
-            contents.append(None)
-
-    # Generate test and try compiling
     assertions = {}
-    for m, c in zip(methods, contents):
-        if c is not None:
-            tg = TestGenerator(c)
-            tg.extract_assertions()
-            # Try compile
-            compiled = tg.test_assertions(test_file_output_path, imp)
-            assertions[m] = compiled
+    for i in range(index):
+        contents = []
+        for message in prompt_messages:
+            m = Model(based_url, relative_url, model, message, temperature)
+            response = m.call_llm_api()
+            if response:
+                contents.append(response["choices"][0]["message"]["content"])
+            else:
+                contents.append(None)
+
+        # Generate test and try compiling
+        for m, c in zip(methods, contents):
+            if c is not None:
+                tg = TestGenerator(c)
+                tg.extract_assertions()
+                # Try compile
+                compiled = tg.test_assertions(test_file_output_path, imp)
+                assertions[m] = compiled
+        if not check_dict(assertions):
+            break
 
     # Build files with assertions passed compilation
     b = Builder()
