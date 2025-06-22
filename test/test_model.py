@@ -34,7 +34,6 @@ def test_model():
 
     response = m.call_llm_api()
     if response:
-        # 调整为chat completions的响应格式
         content = response["choices"][0]["message"]["content"]
         print(f"LLM: {content}")
 

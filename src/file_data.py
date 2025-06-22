@@ -62,7 +62,8 @@ class File:
             self.methods.append({
                 'name': node.name,
                 'class': class_name,
-                'text': method_text
+                'text': method_text,
+                'ast': node
             })
 
         # Deal with methods in classes
@@ -70,10 +71,10 @@ class File:
             for child in node.body:
                 self.process_node_for_methods(child, node.name)
 
-    def prompting(self, k=5):
+    def prompting(self, k=5, input_format="text", cot=False):
         messages = []
         for m in self.methods:
-            messages.append(f"""You are a professional Python test engineer.
+            prompt = f"""You are a professional Python test engineer.
             Please generate at least {k} test assertions for the following Python methods. 
             Requirements:
             1. analyze the method's input parameters, return values, and possible behaviors
@@ -81,5 +82,12 @@ class File:
             including normal case, boundary case, and abnormal case
             3. use pytest style `assert` statements
             4. Do not generate the actual test code or explanations, only the assertions.
-            Method information: {m['text']}""")
+            Method information:"""
+            if input_format == "ast":
+                prompt += m['ast']
+            else:
+                prompt += m['text']
+            if cot:
+                prompt += "Let's think step by step:"
+            messages.append(prompt)
         return messages

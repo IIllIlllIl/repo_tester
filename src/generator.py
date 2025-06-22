@@ -7,6 +7,20 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 class TestGenerator:
+    """
+    Generates test cases based on the LLM generated assertion
+
+    Attributes:
+        answers (str): The answer of the LLM for one method under test (usually a long paragraph)
+        assertions (List): The assertions provided by the LLM
+        compiled (List): The assertions passed the compilation
+
+    Methods:
+        extract_assertions(): Extract assertions from the LLM answer
+        test_assertions(output_path, imports): Check each assertion whether they can pass the compilation
+        create_test_file(output_path, imports): Abandoned method
+        execute_pytest(test_file): Run pytest to check compilation
+    """
     def __init__(self, assertions):
         self.answers = assertions
         self.assertions = []

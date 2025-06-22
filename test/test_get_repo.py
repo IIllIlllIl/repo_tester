@@ -1,4 +1,5 @@
 from src.get_repo import get_github_file
+from src.get_repo import clone_github_repo
 
 
 def test_get_github_file():
@@ -7,4 +8,9 @@ def test_get_github_file():
     print(content)
 
 
+def test_clone_github_repo():
+    clone_github_repo("IIllIlllIl", "os", "../repo_files/")
+
+
 test_get_github_file()
+# test_clone_github_repo()
