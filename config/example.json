@@ -1,13 +1,13 @@
 {
     "repo_owner": "TheAlgorithms",
     "repo_name": "Python",
-    "file_path":  "ciphers/base32.py",
+    "file_path": "ciphers/base32.py",
     "branch":  "master",
     "token": "None",
-    "output": "../repo_files/",
+    "output": "repo_files/",
     "based_url": "https://api.deepseek.com",
     "model": "deepseek-chat",
-    "key": "sk-xxx",
+    "key": "sk-9ac0cd0e98b74c0d990653451e6e135a",
     "imports": [],
     "temperature": 0.0
 }

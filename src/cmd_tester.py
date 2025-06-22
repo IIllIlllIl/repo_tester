@@ -23,8 +23,8 @@ class ArgParser:
         self.args = None
 
     def _add_arguments(self):
-        self.parser.add_argument('-c', '--config_path', type=str, default="../config/example.json",
-                                 help='Set config file path, using "../config/example.json" as default.')
+        self.parser.add_argument('-c', '--config_path', type=str, default="config/example.json",
+                                 help='Set config file path, using "config/example.json" as default.')
 
     def parse(self, args=None):
         self.args = self.parser.parse_args(args)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     branch = config.get('branch')
     token = config.get('token')
     output = config.get('output')
-    target_path = output_path = os.path.join(output, repo_name, file_path)
+    target_path = os.path.join(output, repo_name, file_path)
     directory = os.path.dirname(target_path)
     base_name = os.path.splitext(os.path.basename(target_path))[0]
     test_file_name = f"test_{base_name}.py"

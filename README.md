@@ -18,20 +18,21 @@ To understand this program, We provide an example of this program. The program u
 program "ciphers/base32.py" in the GitHub repo: https://github.com/TheAlgorithms/Python.git.
 
 ### Example
-Before running the test, we should first start the LLM server. In the example, we use the model, "deepseek-chat".
+Before running the test, you should first set LLM API info ("based_url", "temperature", "model", "key")
+in the configuration file with your own LLM API. In the example, we use the model, "deepseek-chat". 
 
 Run the program:
 ```
-export PYTHONPATH='..'
+export PYTHONPATH='.'
 
-python src/cmd_tester.py
+python src/cmd_tester.py -c "config/example.json"
 ```
 
 
 ### Test other repositories
 If you want to test another Python file, you should first change the configurations. In the configuration, you should 
 change the repo info ("repo_owner", "repo_name", "branch", "token") and 
-LLM API info ("based_url", "temperature").
+LLM API info ("based_url", "temperature", "model", "key").
 
 Then, you have to make sure all dependencies of the GitHub repo are installed. If some specific packages are expected 
 to be imported in the test file, add them into the configuration file ("imports"). 

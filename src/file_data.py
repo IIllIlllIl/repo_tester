@@ -35,7 +35,6 @@ class File:
             else:
                 print(f"Func: {method['name']}")
             print(method['text'])
-            print("\n" + "-" * 50 + "\n")
 
     def extract_methods(self):
         for node in ast.parse(self.content).body:
