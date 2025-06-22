@@ -7,7 +7,7 @@
     "output": "repo_files/",
     "based_url": "https://api.deepseek.com",
     "model": "deepseek-chat",
-    "key": "sk-???",
+    "key": "sk-9ac0cd0e98b74c0d990653451e6e135a",
     "imports": [],
     "temperature": 0.0
 }

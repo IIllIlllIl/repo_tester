@@ -22,6 +22,8 @@ class ArgParser:
     def _add_arguments(self):
         self.parser.add_argument('-c', '--config_path', type=str, default="config/example.json",
                                  help='Set config file path, using "config/example.json" as default.')
+        self.parser.add_argument('-m', '--max_generation', type=int, default=1,
+                                 help='The maximum number of LLM generation for each method under test.')
 
     def parse(self, args=None):
         self.args = self.parser.parse_args(args)
@@ -75,11 +77,16 @@ if __name__ == "__main__":
     contents = []
     print("Calling LLM API...")
     for message in prompt_messages:
-        m = Model(based_url, model, message, key, temperature)
-        response = m.openai_api()
-        rp = ResponseProcessor(response, test_file_output_path)
-        rp.extract_test_case()
-        contents.append(rp.test)
+        test_content = ""
+        for i in range(options.max_generation):
+            m = Model(based_url, model, message, key, temperature)
+            response = m.openai_api()
+            rp = ResponseProcessor(response, test_file_output_path)
+            rp.extract_test_case()
+            test_content = rp.test
+            if test_content != '':
+                break
+        contents.append(test_content)
     for c in contents[:]:
         if c == '':
             contents.remove(c)

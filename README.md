@@ -55,7 +55,7 @@ A configuration file contains:
 
 Run this program with your own configuration:
 ```
-python src/cmd_tester.py - c <path/to/config>
+python src/cmd_tester.py - c <path/to/config> -m <max_generation>
 ```
 
 ## Modification
