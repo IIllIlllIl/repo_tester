@@ -1,8 +1,5 @@
 import os
 import argparse
-import subprocess
-from pathlib import Path
-import sys
 from src.file_data import File
 from src.model import Model
 from src.config import Config
@@ -75,7 +72,6 @@ if __name__ == "__main__":
     model = config.get('model')
     temperature = config.get('temperature')
     key = config.get('key')
-
     contents = []
     print("Calling LLM API...")
     for message in prompt_messages:
@@ -84,10 +80,15 @@ if __name__ == "__main__":
         rp = ResponseProcessor(response, test_file_output_path)
         rp.extract_test_case()
         contents.append(rp.test)
+    for c in contents[:]:
+        if c == '':
+            contents.remove(c)
 
     # Save file and run pytest
     merged_content = Builder.merge(contents)
     test_file_content = imp + "\n" + Builder.remove_imports(merged_content, base_name)
-    print(f"Write {len(contents)} tests to {test_file_output_path}.")
-    FileOperator.write_file(test_file_output_path, test_file_content)
+    if FileOperator.write_file(test_file_output_path, test_file_content):
+        print(f"Write {len(contents)} tests to {test_file_output_path}.")
+    else:
+        print("Unexpected error happened when writing tests.")
     Builder.report_pytest(test_file_output_path)
