@@ -1,5 +1,6 @@
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import argparse
 from src.file_data import File
 from src.generator import TestGenerator
@@ -8,7 +9,6 @@ from src.config import Config
 from src.get_repo import clone_github_repo
 from src.build_file import Builder
 from src.dependency import Dependency
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
 class ArgParser:
@@ -21,9 +21,9 @@ class ArgParser:
         self.args = None
 
     def _add_arguments(self):
-        self.parser.add_argument('-c', '--config_path', type=str, default="../config/example.json",
-                                 help='Set config file path, using "../config/example.json" as default.')
-        self.parser.add_argument('-k', '--k', type=int, default=10,
+        self.parser.add_argument('-c', '--config_path', type=str, default="config/example.json",
+                                 help='Set config file path, using "config/example.json" as default.')
+        self.parser.add_argument('-k', '--k', type=int, default=3,
                                  help='Set the time of LLM generation. The assertions involved in the final test'
                                       'case will less than k, since some do not pass the compilation.')
 
@@ -63,11 +63,11 @@ if __name__ == "__main__":
     clone_github_repo(repo_owner, repo_name, output)
 
     # Build test file path
-    target_path = output_path = os.path.join(output, file_path)
+    target_path = output_path = os.path.join(output, repo_name, file_path)
     directory = os.path.dirname(target_path)
     base_name = os.path.splitext(os.path.basename(target_path))[0]
     test_file_name = f"test_{base_name}.py"
-    test_file_output_path = os.path.join(output, test_file_name)
+    test_file_output_path = os.path.join(directory, test_file_name)
 
     # Call LLM and get assertions
     based_url = config.get('based_url')

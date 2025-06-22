@@ -74,15 +74,31 @@ class File:
     def prompting(self, k=5, input_format="text", cot=False):
         messages = []
         for m in self.methods:
-            prompt = f"""You are a professional Python test engineer.
-            Please generate at least {k} test assertions for the following Python methods. 
-            Requirements:
-            1. analyze the method's input parameters, return values, and possible behaviors
-            2. generate assertions for multiple typical test scenarios, 
-            including normal case, boundary case, and abnormal case
-            3. use pytest style `assert` statements
-            4. Do not generate the actual test code or explanations, only the assertions.
-            Method information:"""
+            prompt = f"""Generate test assertions for the Python function below. Adhere strictly to these requirements:
+
+1. Output ONLY valid Python assert statements
+2. Required format: `assert <expression>, "<optional_error_message>"`
+3. Never include:
+   - Explanations or comments
+   - Code blocks (``` markers)
+   - Function definitions
+   - Natural language descriptions
+   - Non-assert code
+
+Positive Examples:
+assert multiply(2, 3) == 6
+assert add(5, -3) == 2, "Positive and negative addition"
+with pytest.raises(ValueError):
+    divide(10, 0)
+
+Negative Examples (UNACCEPTABLE):
+# Test case for multiply function
+print(assert multiply(2,4))
+"The result should be 8" 
+def test_multiply():
+    assert multiply(2,4) == 8
+
+Now generate assertions for this function:"""
             if input_format == "ast":
                 prompt += m['ast']
             else:
@@ -96,3 +112,4 @@ class File:
         names = []
         for m in self.methods:
             names.append(m['name'])
+        return names

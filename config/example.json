@@ -4,10 +4,10 @@
     "file_path":  "ciphers/base32.py",
     "branch":  "master",
     "token": "None",
-    "output": "../repo_files/",
+    "output": "repo_files/",
     "based_url": "http://localhost:8000",
     "relative_url": "v1/chat/completions",
     "model": "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
     "imports": ["from base32 import base32_encode", "from base32 import base32_decode"],
-    "temperature": 0.8
+    "temperature": 0.2
 }

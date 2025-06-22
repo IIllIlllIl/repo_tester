@@ -7,6 +7,8 @@ def test_file():
     f.display()
     m = f.prompting(10)
     print(m)
+    mt = f.get_method_names()
+    print(mt)
 
 
 test_file()
