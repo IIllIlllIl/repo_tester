@@ -8,7 +8,7 @@ Clone this repo and install all dependencies.
 ```
 git clone https://github.com/IIllIlllIl/repo_tester.git
 
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 Then, this program uses LLM to generate test assertions. Therefore, to run this program, a llm server API is required.
 We recommend to use Openai style API.
