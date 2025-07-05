@@ -2,6 +2,18 @@ from src.reader import FileOperator
 
 
 class ResponseProcessor:
+    """
+    Process LLM output and generate test cases
+
+    Attributes:
+        response (str): LLM output
+        output (str): Output file path
+        test (str): Test file context
+
+    Methods:
+        extract_test_case(): Extract test cases from LLM answer
+        save_test_case(import): Add imported packages to test cases and write to output path
+    """
     def __init__(self, answer, output):
         self.response = answer
         self.output = output

@@ -3,7 +3,7 @@ This is a Python program that generates and runs tests for a Python program file
 It takes the program's git repository and the relative path to the file as input. 
 It generates a test file containing one test method per source-code method in the given file.
 
-## Install
+## Installation
 Clone this repo and install all dependencies.
 ```
 git clone https://github.com/IIllIlllIl/repo_tester.git
@@ -58,6 +58,15 @@ Run this program with your own configuration:
 python src/cmd_tester.py - c <path/to/config> -m <max_generation>
 ```
 
+### Parameters
+Here interprets the cmdline input parameters:
+
+| parameters        | type |       default value | description                                                      |
+|:------------------|:----:|--------------------:|------------------------------------------------------------------|
+| config_path(c)    | str  | config/example.json | Set config file path.                                            |
+| max_generation(m) | int  |                   1 | The maximum number of LLM generation for each method under test. |
+
+
 ## Modification
 If you want to write your own program based on this program, here are some detailed designs for better understanding.
 
@@ -75,7 +84,10 @@ Here list of the model files involved in the program flow:
 - build file: It creates a test file with test functions.
 
 ### Flow
+![Flow](./figure/flow.jpg "Flow")
+
 By running the cmd_tester, it will
+
 1) process the cmd args
 2) get the repo file and clone the repo
 3) generate LLM prompts according to the file
